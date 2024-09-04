@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+// import "eigr/functions/protocol/actors/collections.proto";
+import "eigr/functions/protocol/actors/extensions.proto";
+
+message Item {}
+
+message UserState {
+  string id = 1 [ (.eigr.functions.protocol.actors.actor_id) = true ];
+  // Collection item = 2 [(.eigr.functions.protocol.actors.collection_type) =
+  // "Item"];
+}
