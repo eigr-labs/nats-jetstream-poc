@@ -12,9 +12,9 @@ defmodule ActorNatsPoc.Application do
          connection_settings: [
            %{host: "localhost", port: 4222}
          ]
-       }},
+       }}
       # Create Nats Jetstream Broadway pipeline
-      {ActorNatsPoc.Projection.StreamProducer, []}
+      # {ActorNatsPoc.Projection.StreamProducer, []}
     ]
 
     opts = [strategy: :one_for_one, name: ActorNatsPoc.Supervisor]

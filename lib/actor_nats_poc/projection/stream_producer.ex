@@ -50,6 +50,7 @@ defmodule ActorNatsPoc.Projection.StreamProducer do
 
   def handle_batch(_, messages, _, _) do
     list = messages |> Enum.map(fn e -> e.data end)
+    GenServer.cast(ActorNatsPoc.Projection, {:process_events, messages})
     IO.puts("Got a batch: #{inspect(list)}. Sending acknowledgements...")
     messages
   end
