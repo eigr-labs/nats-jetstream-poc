@@ -6,6 +6,8 @@ defmodule ActorNatsPoc.Projection do
   alias Gnat.Jetstream.API.Stream
   alias Gnat.Jetstream.API.Consumer
 
+  @last_24h 86400
+
   @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -126,13 +128,37 @@ defmodule ActorNatsPoc.Projection do
 
       {:error, %{"code" => 404, "description" => "consumer not found", "err_code" => 10014}} ->
         {:ok, %{created: _}} =
-          Consumer.create(:gnat, %Consumer{stream_name: stream_name, durable_name: consumer_name})
+          Consumer.create(:gnat, build_consumer(stream_name, consumer_name, opts))
 
         :ok
 
       error ->
         error
     end
+  end
+
+  defp build_consumer(stream_name, consumer_name, opts) do
+    deliver_policy = Keyword.get(opts, :deliver_policy, :all)
+    build_consumer_by_deliver(deliver_policy, stream_name, consumer_name, opts)
+  end
+
+  defp build_consumer_by_deliver(:by_start_time, stream_name, consumer_name, opts) do
+    ten_minutes =
+      DateTime.utc_now()
+      |> DateTime.add(-@last_24h, :second)
+
+    start_time = Keyword.get(opts, :opt_start_time, ten_minutes)
+
+    %Consumer{
+      stream_name: stream_name,
+      durable_name: consumer_name,
+      deliver_policy: :by_start_time,
+      opt_start_time: start_time
+    }
+  end
+
+  defp build_consumer_by_deliver(:all, stream_name, consumer_name, _opts) do
+    %Consumer{stream_name: stream_name, durable_name: consumer_name, deliver_policy: :all}
   end
 
   defp destroy_consumer(opts) do
